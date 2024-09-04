@@ -1,0 +1,77 @@
+#import libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+df = pd.read_csv(r"C:\Users\hp\Downloads\heart_attack_prediction_dataset.csv\heart_attack_prediction_dataset1.csv")
+
+df.drop(columns='Patient ID', inplace=True) #droping the patient id
+
+df.info()
+
+numerical_attributes = df.select_dtypes(include=[np.number]).columns #selecting numerical attributes
+categorical_attributes = df.select_dtypes(include=['object']).columns # selecting categorical attributes
+df[numerical_attributes].nunique() # checking the number of unique values in numerical attributes
+
+numerical_binaries = []
+
+numerical_nonbinaries = []
+
+for i in numerical_attributes:
+    if df[i].nunique() ==2:
+        numerical_binaries.append(i)
+    else:
+        numerical_nonbinaries.append(i) # checking if the numerical attributes are binary or not
+
+df_risk = df[df['Heart Attack Risk']==1] # selecting the patients with heart attack risk
+df2 = df[numerical_attributes].groupby('Heart Attack Risk').mean().transpose() # calculating the mean of numerical attributes for patients with heart attack risk
+df2
+
+print("\nSummary Statistics for Numerical Attributes:") # printing the summary statistics for numerical (non binaries) attributes
+print(df[numerical_nonbinaries].describe())
+
+# Visualize the distribution of numerical attributes using histograms
+
+plt.figure(figsize=(20, 15))
+for i, col in enumerate(numerical_nonbinaries, 1):
+    plt.subplot(6,2, i)  
+    sns.histplot(df_risk[col], kde=True)
+    plt.tight_layout() 
+plt.show()
+
+# Visualize the distribution of numerical attributes using boxplots
+
+plt.figure(figsize=(20, 15))
+for i, col in enumerate(numerical_nonbinaries, 1):
+    plt.subplot(5,4, i)  
+    sns.boxplot(data=df_risk, y=col)
+    plt.tight_layout()
+plt.show()
+
+# Visualize the distribution of some categorical attributes using count plots
+
+plt.figure(figsize=(20, 15))
+for i, col in enumerate(['Sex','Diet','Country','Continent','Hemisphere'], 1):
+    plt.subplot(3,2, i)  
+    sns.countplot(data=df, x=col, hue='Heart Attack Risk')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+plt.show()
+
+# Calculate and visualize the correlation matrix for numerical attributes
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(df_risk[numerical_attributes].corr(), annot=True, fmt=".2f", cmap='coolwarm')
+plt.show()
+
+# Visualize the distribution of numerical attributes using boxplots for each category of the target variable
+
+plt.figure(figsize=(20, 15))
+for i, col in enumerate(numerical_nonbinaries, 1):
+    plt.subplot(4, 3, i)  
+    sns.boxplot(data=df, x='Heart Attack Risk', y=col)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+plt.show()
